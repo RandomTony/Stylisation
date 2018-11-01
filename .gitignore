@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+#ignore build generated files
+build/*
+#ignore executables files
+bin/*
+*CMakeFiles*
