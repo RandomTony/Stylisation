@@ -25,8 +25,8 @@ find_package(
 link_directories(${OpenCV_LIBRARY_DIRS})
 
 include_directories(
-  ${STYLISATION_ROOT}/include,
-  ${OpenCV_INCLUDE_DIRS}
+	${OpenCV_INCLUDE_DIRS}
+  ${STYLISATION_ROOT}/include
 )
 
 #maybe for each artistical effect create specific var to have specific
@@ -35,13 +35,14 @@ file(
   #all path will be in ${SOURCE} var
   SOURCE
 
-  ${STYLISATION_ROOT}/src/*
+	${STYLISATION_ROOT}/include/.h
 
-  ${STYLISATION_ROOT}/include/*
+  ${STYLISATION_ROOT}/src/.cpp
 )
 
 add_executable(
   stylisation
+	test.cpp
   ${SOURCE}
 )
 
