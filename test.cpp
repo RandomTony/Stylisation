@@ -28,13 +28,35 @@ void testDoG(Mat & img){
   // std::cout << dog << '\n';
   Mat test = zeroCrossingMat(dog);
   imshow("passage par zero dog, threshold 0 percent", test);
+  imwrite("0percentDog.jpg",test);
   double min, max;
   minMaxLoc(dog,&min,&max);
   float threshold = max*4/100;
   Mat testThreshold = zeroCrossingMat(dog,threshold);
   imshow("passage par zero dog, threshold 4 percent", testThreshold);
+  imwrite("4percentDog.jpg",testThreshold);
 }
 
+
+void testTensor(Mat & img){
+  Mat tensor, dx, dy;
+  Mat doubleImg;
+  img.convertTo(doubleImg,CV_32F,1/255.0);
+  Sobel(doubleImg,dx, CV_32F, 1, 0, 1);
+  Sobel(doubleImg,dy, CV_32F, 0, 1, 1);
+  Mat eigenValue, eigenVector;
+  Mat imgToShow(img.rows, img.cols, CV_32F);
+  for (size_t i = 0; i < img.rows; i++) {
+    for (size_t j = 0; j < img.cols; j++) {
+      tensor = tensorStructure(dx,dy,i,j);
+      if(eigen(tensor,eigenValue,eigenVector)){
+        // std::cout << "eigenValue: " << eigenValue << " eigenVector: " << eigenVector << '\n';
+        
+      }
+    }
+  }
+
+}
 
 int main(int argc, char const *argv[]) {
   Mat im;
@@ -52,10 +74,8 @@ int main(int argc, char const *argv[]) {
   // Mat sGradient;
   // sGradient = getSobelGradient(imGrayScale);
   // imshow("gradient", sGradient);
-  testDoG(imGrayScale);
+  // testDoG(imGrayScale);
   //calculer les passages par 0 du DoG
-  waitKey();
-  waitKey();
-  testConvol();
+  testTensor(imGrayScale);
   return 0;
 }

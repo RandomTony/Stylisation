@@ -3,6 +3,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/mat.hpp>
+#include <cmath> //for math functions
 
 using namespace cv;
 
@@ -71,6 +72,7 @@ The border are avoided for a easier implementation
 */
 Mat zeroCrossingMat(Mat & img, float threshold = 0.0){
   Mat zeroCross(img.rows,img.cols,CV_8UC1);
+  Mat dx, dy;
   //avoid the border
   for (int i = 1; i < (img.rows)-1; i++) {
     for (int j = 1; j < (img.cols)-1; j++) {
@@ -78,6 +80,41 @@ Mat zeroCrossingMat(Mat & img, float threshold = 0.0){
     }
   }
   return zeroCross;
+}
+
+/**
+Compute the tensor structure matrice of a given pixel
+@param dx, the vertical gradient
+@param dy, the horizontal gradient
+@param r, the row of concerned pixel
+@param c, the column of the concerned pixel
+@return the tensor structure for the given pixel
+*/
+Mat tensorStructure(const Mat &  dx, const Mat & dy, const int r, const int c){
+  Mat tensor(2,2,CV_32F);
+  tensor.at<float>(0,0) = dx.at<float>(r,c)*dx.at<float>(r,c);
+  tensor.at<float>(0,1) = dx.at<float>(r,c) * dy.at<float>(r,c);
+  tensor.at<float>(1,0) = dx.at<float>(r,c) * dy.at<float>(r,c);
+  tensor.at<float>(1,1) = dy.at<float>(r,c) * dy.at<float>(r,c);;
+  return tensor;
+}
+
+/**
+Compute eigen value and eigen vector with the tensor structure map
+*/
+void eigen(const Mat & tensor, Mat* gradient, Mat* normal, float* gAmplitude, float* nAmplitude){
+  //first compute Delta as D=(g11-g22)²+4*(g12)²
+  float delta = pow(tensor.at<float>(0,0)-tensor.at<float>(1,1),2)
+               +4*pow(tensor.at<float>(0,1),2);
+  *gAmplitude = (tensor.at<float>(0,0)*tensor.at<float>(1,1) + sqrt(delta))/2;
+  *nAmplitude = (tensor.at<float>(0,0)*tensor.at<float>(1,1) - sqrt(delta))/2;
+  gradient = new Mat(2,1,CV_32F);
+  normal = new Mat(2,1,CV_32F);
+  normal.at<float>(0,0) = 2*tensor.at<float>(0,1);
+  normal.at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)-sqrt(delta);
+  gradient.at<float>(0,0) = 2*tensor.at<float>(0,1);
+  gradient.at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)+sqrt(delta);
+
 }
 
 /**
