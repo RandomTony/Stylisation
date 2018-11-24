@@ -44,19 +44,41 @@ void testTensor(Mat & img){
   img.convertTo(doubleImg,CV_32F,1/255.0);
   Sobel(doubleImg,dx, CV_32F, 1, 0, 1);
   Sobel(doubleImg,dy, CV_32F, 0, 1, 1);
-  Mat eigenValue, eigenVector;
+  Mat gradient, normal;
+  float gAmplitude, nAmplitude;
   Mat imgToShow(img.rows, img.cols, CV_32F);
   for (size_t i = 0; i < img.rows; i++) {
     for (size_t j = 0; j < img.cols; j++) {
       tensor = tensorStructure(dx,dy,i,j);
-      if(eigen(tensor,eigenValue,eigenVector)){
-        // std::cout << "eigenValue: " << eigenValue << " eigenVector: " << eigenVector << '\n';
-        
+      eigen(tensor,&gradient,&normal,&gAmplitude,&nAmplitude);
+      imgToShow.at<float>(i,j)=dpX(gAmplitude,nAmplitude,0.1,20000);
+    }
+  }
+  namedWindow("normtest", WINDOW_NORMAL);
+  double min, max;
+  minMaxLoc(imgToShow,&min,&max);
+  Mat imgTest;
+  imgToShow.convertTo(imgTest,CV_8UC1);
+  imshow("normtest", imgTest);
+  if(imgToShow.cols>1920 || imgToShow.rows>1080){
+    resizeWindow("normtest",1800,1000);
+  }
+  namedWindow("seuillage", WINDOW_NORMAL);
+  Mat imgThresholded(img.rows, img.cols, CV_32F);
+  for (size_t i = 0; i < imgToShow.rows; i++) {
+    for (size_t j = 0; j < imgToShow.cols; j++) {
+      if(imgToShow.at<float>(i,j)>(max*60/100)){
+        imgThresholded.at<float>(i,j) = 0;
+      }
+      else{
+        imgThresholded.at<float>(i,j) = imgToShow.at<float>(i,j);
       }
     }
   }
-
+  imshow("seuillage",imgThresholded);
+  waitKey();
 }
+
 
 int main(int argc, char const *argv[]) {
   Mat im;

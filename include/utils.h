@@ -101,6 +101,11 @@ Mat tensorStructure(const Mat &  dx, const Mat & dy, const int r, const int c){
 
 /**
 Compute eigen value and eigen vector with the tensor structure map
+@param tensor, the tensor structure for one pixel. It is a 2x2 double mat
+@param gradient, a pointer to a 2x1 Matrix representing the gradient
+@param normal, a pointer to a 2x1 Matrix representing the isophote, the normal to the gradient
+@param gAmplitude, the gradient amplitude
+@param nAmplitude, the isophote amplitude
 */
 void eigen(const Mat & tensor, Mat* gradient, Mat* normal, float* gAmplitude, float* nAmplitude){
   //first compute Delta as D=(g11-g22)²+4*(g12)²
@@ -110,11 +115,18 @@ void eigen(const Mat & tensor, Mat* gradient, Mat* normal, float* gAmplitude, fl
   *nAmplitude = (tensor.at<float>(0,0)*tensor.at<float>(1,1) - sqrt(delta))/2;
   gradient = new Mat(2,1,CV_32F);
   normal = new Mat(2,1,CV_32F);
-  normal.at<float>(0,0) = 2*tensor.at<float>(0,1);
-  normal.at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)-sqrt(delta);
-  gradient.at<float>(0,0) = 2*tensor.at<float>(0,1);
-  gradient.at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)+sqrt(delta);
+  normal->at<float>(0,0) = 2*tensor.at<float>(0,1);
+  normal->at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)-sqrt(delta);
+  gradient->at<float>(0,0) = 2*tensor.at<float>(0,1);
+  gradient->at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)+sqrt(delta);
+}
 
+double coherenceNorm(const float gAmplitude /*lambda+*/, const float nAmplitude /*lambda-*/){
+  return pow((gAmplitude-nAmplitude)/(gAmplitude+nAmplitude),2);
+}
+
+double dpX(const float gAmplitude /*lambda+*/, const float nAmplitude /*lambda-*/, const float alpha, const float eta){
+  return alpha+(1-alpha)*exp((-1/eta)/((gAmplitude-nAmplitude)/(gAmplitude+nAmplitude)));
 }
 
 /**
