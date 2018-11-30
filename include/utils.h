@@ -82,95 +82,29 @@ Mat zeroCrossingMat(Mat & img, float threshold = 0.0){
   return zeroCross;
 }
 
+
 /**
-Compute the tensor structure matrice of a given pixel
-@param dx, the vertical gradient
-@param dy, the horizontal gradient
-@param r, the row of concerned pixel
-@param c, the column of the concerned pixel
-@return the tensor structure for the given pixel
+Return a thresholded picture. The threshold is estimate with a percentage of the maximum\n
+value of the picture. The value below the threshold are printed and the other ignored
+@param img the picture that we want to threshold
+@param thresholdPerc, the threshold between 0 and 1 represent a percentage of the maximum value
+@return the thresholded picture
 */
-Mat tensorStructure(const Mat &  dx, const Mat & dy, const int r, const int c){
-  Mat tensor(2,2,CV_32F);
-  tensor.at<float>(0,0) = dx.at<float>(r,c)*dx.at<float>(r,c);
-  tensor.at<float>(0,1) = dx.at<float>(r,c) * dy.at<float>(r,c);
-  tensor.at<float>(1,0) = tensor.at<float>(0,1);
-  tensor.at<float>(1,1) = dy.at<float>(r,c) * dy.at<float>(r,c);;
-  return tensor;
-}
+Mat thresholdUpperValues(const Mat & img, const float thresholdPerc){
+  Mat imgThresholded(img.rows, img.cols, CV_8UC1);
+  double min, max;
+  float threshold;
 
-Mat* tensorStructureArray(const Mat & dx, const Mat & dy){
-  Mat* tensorArray = new Mat[3];
-  Mat tensorIJ;
-  tensorArray[0] = Mat(dx.rows,dx.cols,CV_32F);
-  tensorArray[1] = Mat(dx.rows,dx.cols,CV_32F);
-  tensorArray[2] = Mat(dx.rows,dx.cols,CV_32F);
+  minMaxLoc(img, &min, &max);
+  threshold = max*thresholdPerc;
 
-  for (size_t i = 0; i < dx.rows; i++) {
-    for (size_t j = 0; j < dx.cols; j++) {
-      tensorIJ = tensorStructure(dx,dy,i,j); //compute tensor structure for given pixel
-      tensorArray[0].at<float>(i,j) = tensorIJ.at<float>(0,0); //g11
-      tensorArray[1].at<float>(i,j) = tensorIJ.at<float>(1,1); //g22
-      tensorArray[2].at<float>(i,j) = tensorIJ.at<float>(0,1); //g12
+  for (size_t i = 0; i < img.rows; i++) {
+    for (size_t j = 0; j < img.cols; j++) {
+      imgThresholded.at<uchar>(i,j) = img.at<float>(i,j) > threshold ? 255 : 0;
     }
   }
 
-  return tensorArray;
-}
-
-
-/**
-Compute eigen value and eigen vector with the tensor structure map
-@param tensor, the tensor structure for one pixel. It is a 2x2 double mat
-@param gradient, a pointer to a 2x1 Matrix representing the gradient
-@param normal, a pointer to a 2x1 Matrix representing the isophote, the normal to the gradient
-@param gAmplitude, the gradient amplitude
-@param nAmplitude, the isophote amplitude
-*/
-void eigen(const Mat & tensor, Mat* gradient, Mat* normal, float* gAmplitude, float* nAmplitude){
-  gradient = new Mat(2,1,CV_32F);
-  normal = new Mat(2,1,CV_32F);
-
-  //compute Delta as D=(g11-g22)²+4*(g12)²
-  float delta = pow(tensor.at<float>(0,0)-tensor.at<float>(1,1),2)
-               +4*pow(tensor.at<float>(0,1),2);
-
-  *gAmplitude = (tensor.at<float>(0,0)*tensor.at<float>(1,1) + sqrt(delta))/2.0;
-  *nAmplitude = (tensor.at<float>(0,0)*tensor.at<float>(1,1) - sqrt(delta))/2.0;
-
-  normal->at<float>(0,0) = 2*tensor.at<float>(0,1);
-  normal->at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)-sqrt(delta);
-  gradient->at<float>(0,0) = 2*tensor.at<float>(0,1);
-  gradient->at<float>(0,1) = tensor.at<float>(0,0)-tensor.at<float>(1,1)+sqrt(delta);
-}
-
-double coherenceNorm(const float gAmplitude /*lambda+*/, const float nAmplitude /*lambda-*/){
-  return pow((gAmplitude-nAmplitude)/(gAmplitude+nAmplitude),2);
-}
-
-double dpX(const float gAmplitude /*lambda+*/, const float nAmplitude /*lambda-*/, const float alpha, const float eta){
-  // return alpha+(1-alpha)*exp((-1.0/eta)/((gAmplitude-nAmplitude)/(gAmplitude+nAmplitude)));
-  return alpha+(1-alpha)*exp((-eta)/(pow((gAmplitude-nAmplitude),2)));
-}
-
-/**
-Compute Difference of Gaussian, an approximation of Laplacian of Gaussian
-
-*/
-Mat DoG(const Mat & pic, double s1, double s2){
-  Mat firstGaussianBlur, secondGaussianBlur;
-  if(s1<=s2){
-    std::cerr << "S1<=S2: to compute DoG, s1 must be greater to s2" << '\n';
-  }
-  // if(double(s1)/double(s2)>=5.0/3.0){
-  //   // printf("The two sigma have \n", );
-  //   exit(1);
-  // }
-  GaussianBlur(pic,firstGaussianBlur,Size(0,0),s1);
-  GaussianBlur(pic,secondGaussianBlur,Size(0,0),s2);
-  imshow("gaussianBlur1",firstGaussianBlur);
-  imshow("secondGaussianBlur",secondGaussianBlur);
-  return firstGaussianBlur-secondGaussianBlur;
+  return imgThresholded;
 }
 
 #endif
