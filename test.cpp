@@ -129,13 +129,8 @@ void testTensor(Mat & img){
 
 int main(int argc, char const *argv[]) {
   Mat im;
-  if(argc == 2)
-    im = imread(argv[1],CV_LOAD_IMAGE_COLOR);
-  else{
-    std::cout << "Provide an picture path as an argument." << '\n';
-    std::cout << "Usage: " << argv[0] << " <pathToPicture>" << '\n';
-    return 1;
-  }
+  im = imread("../ressources/highDefinitionUnsplash/spacex-549328-unsplash.jpg",CV_LOAD_IMAGE_COLOR);
+  namedWindow("test picture", WINDOW_NORMAL);
   imshow("test picture",im);
   waitKey();
   Mat imGrayScale;
