@@ -2,6 +2,8 @@
 #include <gradient.h>
 #include <opencv2/highgui.hpp>
 #include <utils.h>
+#include <tensor.h>
+#include <dog.h>
 #include <opencv2/core/mat.hpp>
 
 using namespace cv;
@@ -37,26 +39,29 @@ void testDoG(Mat & img){
   imwrite("4percentDog.jpg",testThreshold);
 }
 
-void testTensor2(Mat & img){
+void testTensor(Mat & img){
   Mat dx, dy;
   Mat doubleImg;
+  Mat gradientVector, normalVector;
+  Mat isophote(img.rows, img.cols, CV_32F);
+  Mat normal(img.rows, img.cols, CV_32F);
+  Mat coherence(img.rows, img.cols, CV_32F);
+  Mat dpx(img.rows, img.cols, CV_32F);
+  Mat* smoothedTensor = new Mat[3];
+  Mat* tensorArray;
+  Mat tensor(2,2,CV_32F);
+  Mat u8Normal, u8Isophote, u8Coherence, u8DpX;
+  double min, max;
 
   img.convertTo(doubleImg,CV_32F,1/255.0);
   Sobel(doubleImg,dx, CV_32F, 1, 0, 1);
   Sobel(doubleImg,dy, CV_32F, 0, 1, 1);
-  Mat gradientVector, normalVector;
-  Mat imgToShow(img.rows, img.cols, CV_32F);
 
-  Mat* tensorArray = tensorStructureArray(dx,dy);
-  Mat isophote(img.rows, img.cols, CV_32F);
-  Mat normal(img.rows, img.cols, CV_32F);
-  Mat* smoothedTensor = new Mat[3];
+  tensorArray = tensorStructureArray(dx,dy);
 
-  GaussianBlur(tensorArray[0],smoothedTensor[0],Size(0,0),3);
-  GaussianBlur(tensorArray[1],smoothedTensor[1],Size(0,0),3);
-  GaussianBlur(tensorArray[2],smoothedTensor[2],Size(0,0),3);
-
-  Mat tensor(2,2,CV_32F);
+  GaussianBlur(tensorArray[0],smoothedTensor[0],Size(0,0),1);
+  GaussianBlur(tensorArray[1],smoothedTensor[1],Size(0,0),1);
+  GaussianBlur(tensorArray[2],smoothedTensor[2],Size(0,0),1);
 
   for (size_t i = 0; i < img.rows; i++) {
     for (size_t j = 0; j < img.cols; j++) {
@@ -65,66 +70,57 @@ void testTensor2(Mat & img){
       tensor.at<float>(1,0) = smoothedTensor[2].at<float>(i,j);
       tensor.at<float>(1,1) = smoothedTensor[1].at<float>(i,j);
       eigen(tensor,&gradientVector,&normalVector,&isophote.at<float>(i,j),&normal.at<float>(i,j));
+      coherence.at<float>(i,j) = coherenceNorm(isophote.at<float>(i,j),normal.at<float>(i,j));
+      dpx.at<float>(i,j) = dpX(isophote.at<float>(i,j),normal.at<float>(i,j),0.1,0.0001);
     }
   }
-  Mat u8Normal, u8Isophote;
-  double min, max;
   minMaxLoc(normal,&min,&max);
+  std::cout << "Normal:" << '\n';
   std::cout << "min: " << min << " max: " << max << '\n';
   normal.convertTo(u8Normal,CV_8UC1,255.0/max);
   minMaxLoc(isophote,&min,&max);
+  std::cout << "Isophote" << '\n';
   std::cout << "min: " << min << " max: " << max << '\n';
   isophote.convertTo(u8Isophote,CV_8UC1,255.0/max);
+  minMaxLoc(isophote,&min,&max);
+  std::cout << "Coherence Norm:" << '\n';
+  minMaxLoc(coherence,&min,&max);
+  std::cout << "min: " << min << " max: " << max << '\n';
+  coherence.convertTo(u8Coherence,CV_8UC1,255.0/max);
+  std::cout << "DpX Norm:" << '\n';
+  minMaxLoc(dpx,&min,&max);
+  std::cout << "min: " << min << " max: " << max << '\n';
+  dpx.convertTo(u8DpX,CV_8UC1,255.0/max);
 
   namedWindow("normale", WINDOW_NORMAL);
   imshow("normale",u8Normal);
   namedWindow("isophote", WINDOW_NORMAL);
   imshow("isophote",u8Isophote);
+  namedWindow("Coherence", WINDOW_NORMAL);
+  imshow("Coherence",coherence);
+  namedWindow("dpx", WINDOW_NORMAL);
+  imshow("dpx",u8DpX);
 
-  waitKey();
-}
+  //threshold
+  Mat imgToShow = thresholdUpperValues(dpx,0.7);
+  namedWindow("Norm thresholded", WINDOW_NORMAL);
+  imshow("Norm thresholded", imgToShow);
 
-void testTensor(Mat & img){
-  Mat tensor, dx, dy;
-  Mat doubleImg;
-  img.convertTo(doubleImg,CV_32F,1/255.0);
-  Sobel(doubleImg,dx, CV_32F, 1, 0, 1);
-  Sobel(doubleImg,dy, CV_32F, 0, 1, 1);
-  Mat gradient, normal;
-  float gAmplitude, nAmplitude;
-  Mat imgToShow(img.rows, img.cols, CV_32F);
+  Mat imgModified = img.clone();
   for (size_t i = 0; i < img.rows; i++) {
     for (size_t j = 0; j < img.cols; j++) {
-      tensor = tensorStructure(dx,dy,i,j);
-      eigen(tensor,&gradient,&normal,&gAmplitude,&nAmplitude);
-      imgToShow.at<float>(i,j)=dpX(gAmplitude,nAmplitude,0.001,0.0001);
+      if(imgToShow.at<uchar>(i,j)==255){
+        imgModified.at<uchar>(i,j) = 0;
+      }
     }
   }
-  namedWindow("normtest", WINDOW_NORMAL);
-  double min, max;
-  minMaxLoc(imgToShow,&min,&max);
-  Mat imgTest;
-  std::cout << "min: " << min << " max: " << max << '\n';
-  imgToShow.convertTo(imgTest,CV_8UC1,255.0/max);
-  imshow("normtest", imgTest);
-  // if(imgToShow.cols>1920 || imgToShow.rows>1080){
-  //   resizeWindow("normtest",1800,1000);
-  // }
-  // namedWindow("seuillage", WINDOW_NORMAL);
-  // Mat imgThresholded(img.rows, img.cols, CV_32F);
-  // for (size_t i = 0; i < imgToShow.rows; i++) {
-  //   for (size_t j = 0; j < imgToShow.cols; j++) {
-  //     if(imgToShow.at<float>(i,j)>(max*60/100)){
-  //       imgThresholded.at<float>(i,j) = 0;
-  //     }
-  //     else{
-  //       imgThresholded.at<float>(i,j) = imgToShow.at<float>(i,j);
-  //     }
-  //   }
-  // }
-  // imshow("seuillage",imgThresholded);
+
+  namedWindow("img modif", WINDOW_NORMAL);
+  imshow("img modif", imgModified);
+
   waitKey();
 }
+
 
 
 int main(int argc, char const *argv[]) {
@@ -140,6 +136,6 @@ int main(int argc, char const *argv[]) {
   // imshow("gradient", sGradient);
   // testDoG(imGrayScale);
   //calculer les passages par 0 du DoG
-  testTensor2(imGrayScale);
+  testTensor(imGrayScale);
   return 0;
 }
