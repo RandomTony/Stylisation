@@ -17,8 +17,6 @@ return, the eigen values need to be given as pointers.
 @param nAmplitude, the isophote amplitude
 */
 void eigen(const Mat & tensor, Mat* gradient, Mat* normal, float* gAmplitude, float* nAmplitude){
-  gradient = new Mat(2,1,CV_32F);
-  normal = new Mat(2,1,CV_32F);
   //compute Delta as D=(g11-g22)²+4*(g12)²
   float delta = pow(tensor.at<float>(0,0)-tensor.at<float>(1,1),2)
                 + 4*pow(tensor.at<float>(0,1),2);

@@ -35,9 +35,9 @@ file(
   #all path will be in ${SOURCE} var
   SOURCE
 
-	${STYLISATION_ROOT}/include/.h
+	${STYLISATION_ROOT}/include/*.h
 
-  ${STYLISATION_ROOT}/src/.cpp
+  ${STYLISATION_ROOT}/src/*.cpp
 )
 
 add_executable(

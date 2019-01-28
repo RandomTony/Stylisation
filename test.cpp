@@ -42,7 +42,7 @@ void testDoG(Mat & img){
 void testTensor(Mat & img){
   Mat dx, dy;
   Mat doubleImg;
-  Mat gradientVector, normalVector;
+  Mat gradientVector(2,1,CV_32F), normalVector(2,1,CV_32F);
   Mat isophote(img.rows, img.cols, CV_32F);
   Mat normal(img.rows, img.cols, CV_32F);
   Mat coherence(img.rows, img.cols, CV_32F);
