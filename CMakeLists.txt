@@ -27,6 +27,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 include_directories(
 	${OpenCV_INCLUDE_DIRS}
   ${STYLISATION_ROOT}/include
+  ${STYLISATION_ROOT}/lib
 )
 
 #maybe for each artistical effect create specific var to have specific
@@ -36,8 +37,8 @@ file(
   SOURCE
 
 	${STYLISATION_ROOT}/include/*.h
-
   ${STYLISATION_ROOT}/src/*.cpp
+  ${STYLISATION_ROOT}/lib/*.h
 )
 
 add_executable(

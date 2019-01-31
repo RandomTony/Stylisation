@@ -5,6 +5,8 @@
 #include <tensor.h>
 #include <dog.h>
 #include <opencv2/core/mat.hpp>
+#include <etf.h>
+#include <lime-master/sources/lime.hpp>
 
 using namespace cv;
 
@@ -42,7 +44,7 @@ void testDoG(Mat & img){
 void testTensor(Mat & img){
   Mat dx, dy;
   Mat doubleImg;
-  Mat gradientVector(2,1,CV_32F), normalVector(2,1,CV_32F);
+  Point2d gradientVector, normalVector;
   Mat isophote(img.rows, img.cols, CV_32F);
   Mat normal(img.rows, img.cols, CV_32F);
   Mat coherence(img.rows, img.cols, CV_32F);
@@ -121,7 +123,45 @@ void testTensor(Mat & img){
   waitKey();
 }
 
+void testETF2(Mat & grayImg){
+  Mat floatImg;
+  Mat gradX, gradY;
+  Mat gVectMap = Mat::zeros(grayImg.rows, grayImg.cols, CV_32FC2);
+  Mat isoVectMap = Mat::zeros(grayImg.rows, grayImg.cols, CV_32FC2);
+  Mat gHat = cv::Mat::zeros(grayImg.rows, grayImg.cols, CV_32FC1);
 
+  grayImg.convertTo(floatImg,CV_32F,1/255.0);
+
+  Sobel(floatImg, gradX, CV_32F, 1, 0);
+  Sobel(floatImg, gradY, CV_32F, 0, 1);
+
+  for (int y = 0; y < grayImg.rows; y++) {
+    for (int x = 0; x < grayImg.cols; x++) {
+      float gx = gradX.at<float>(y, x);
+      float gy = gradY.at<float>(y, x);
+      gVectMap.at<float>(y, x * 2 + 0) = static_cast<float>(gy);
+      gVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx);
+
+      float mag = sqrt(gx*gx + gy* gy);
+
+      gHat.at<float>(y, x) = mag;
+
+      isoVectMap.at<float>(y, x * 2 + 0) = static_cast<float>(-gy / (mag + 1.0e-8));
+      isoVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx / (mag + 1.0e-8));
+    }
+  }
+
+  Mat etf = computeETF(gVectMap, isoVectMap, gHat, 5, 3);
+  Mat lic, noise;
+  lime::randomNoise(noise, cv::Size(grayImg.cols, grayImg.rows));
+  lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
+  namedWindow("LIC homeMade", WINDOW_NORMAL);
+  imshow("LIC homeMade", lic);
+  Mat BnW;
+  lic.convertTo(BnW, CV_8UC1, 255.0);
+  imwrite("testLIC.png",BnW);
+  waitKey();
+}
 
 int main(int argc, char const *argv[]) {
   Mat im;
@@ -136,6 +176,6 @@ int main(int argc, char const *argv[]) {
   waitKey();
   Mat imGrayScale;
   cvtColor(im,imGrayScale,COLOR_BGR2GRAY);
-  testTensor(imGrayScale);
+  testETF2(imGrayScale);
   return 0;
 }
