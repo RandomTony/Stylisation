@@ -123,7 +123,7 @@ void testTensor(Mat & img){
   waitKey();
 }
 
-void testETF2(Mat & grayImg){
+void testETF(Mat & grayImg){
   Mat floatImg;
   Mat gradX, gradY;
   Mat gVectMap = Mat::zeros(grayImg.rows, grayImg.cols, CV_32FC2);
@@ -161,6 +161,13 @@ void testETF2(Mat & grayImg){
   lic.convertTo(BnW, CV_8UC1, 255.0);
   imwrite("testLIC.png",BnW);
   waitKey();
+
+  Mat lic2, etf2;
+  lime::calcETF(floatImg, etf2);
+  lime::LIC(noise, lic2, etf2, 20, lime::LIC_EULERIAN);
+  namedWindow("LIC lime", WINDOW_NORMAL);
+  imshow("LIC lime", lic);
+  waitKey();
 }
 
 int main(int argc, char const *argv[]) {
@@ -176,6 +183,6 @@ int main(int argc, char const *argv[]) {
   waitKey();
   Mat imGrayScale;
   cvtColor(im,imGrayScale,COLOR_BGR2GRAY);
-  testETF2(imGrayScale);
+  testETF(imGrayScale);
   return 0;
 }
