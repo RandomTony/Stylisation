@@ -107,4 +107,17 @@ Mat thresholdUpperValues(const Mat & img, const float thresholdPerc){
   return imgThresholded;
 }
 
+/**
+Compute Gaussian size from standard deviation
+Invert of computation found here https://docs.opencv.org/3.2.0/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
+For futher math explanation, see here https://stackoverflow.com/questions/14060017/calculate-the-gaussian-filters-sigma-using-the-kernels-size
+*/
+float kernelFromStandardDev(float standardDev){
+  return (standardDev-0.8)*(20.0/3.0)+3.0;
+}
+
+int sign(float value){
+  return value < 0? -1 : 1;
+}
+
 #endif

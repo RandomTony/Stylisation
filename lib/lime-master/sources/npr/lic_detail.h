@@ -292,6 +292,7 @@ void vector2angle(cv::InputArray vfield, cv::OutputArray angle) {
 }
 
 void angle2vector(cv::InputArray angle, cv::OutputArray vfield, double scale) {
+    // here angle is an angle vector computed from tangent
     Assertion(angle.depth() == CV_32F && angle.channels() == 1, "Format of input tangent angles are invalid.");
 
     cv::Mat A = angle.getMat();
@@ -301,8 +302,11 @@ void angle2vector(cv::InputArray angle, cv::OutputArray vfield, double scale) {
     T = cv::Mat(height, width, CV_32FC2);
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
+
             float theta = A.at<float>(y, x);
+            // give the length of adjacent side
             T.at<float>(y, x * 2 + 0) = static_cast<float>(scale * cos(theta));
+            // give the length of the opposite side
             T.at<float>(y, x * 2 + 1) = static_cast<float>(scale * sin(theta));
         }
     }

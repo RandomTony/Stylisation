@@ -319,6 +319,8 @@ void calcVectorField(cv::InputArray input, cv::OutputArray angles,
             for (int x = 0; x < width; x++) {
                 double tx = etf.at<double>(y, x * 2 + 0);
                 double ty = etf.at<double>(y, x * 2 + 1);
+                // compute the angle between ty and tx use
+                // compute the angle btw ty and tx
                 vfield.at<float>(y, x) = static_cast<float>(atan2(ty, tx));
             }
         }

@@ -7,6 +7,7 @@
 #include <opencv2/core/mat.hpp>
 #include <etf.h>
 #include <lime-master/sources/lime.hpp>
+#include <fdog.h>
 
 using namespace cv;
 
@@ -139,8 +140,6 @@ void testETF(Mat & grayImg){
     for (int x = 0; x < grayImg.cols; x++) {
       float gx = gradX.at<float>(y, x);
       float gy = gradY.at<float>(y, x);
-      gVectMap.at<float>(y, x * 2 + 0) = static_cast<float>(gy);
-      gVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx);
 
       float mag = sqrt(gx*gx + gy* gy);
 
@@ -151,23 +150,39 @@ void testETF(Mat & grayImg){
     }
   }
 
-  Mat etf = computeETF(gVectMap, isoVectMap, gHat, 5, 3);
-  Mat lic, noise;
-  lime::randomNoise(noise, cv::Size(grayImg.cols, grayImg.rows));
-  lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
-  namedWindow("LIC homeMade", WINDOW_NORMAL);
-  imshow("LIC homeMade", lic);
+  Mat etf = computeETF(isoVectMap, gHat, 5, 3);
+  // Mat lic, noise;
+  // lime::randomNoise(noise, cv::Size(grayImg.cols, grayImg.rows));
+  // lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
+  // namedWindow("LIC homeMade", WINDOW_NORMAL);
+  // imshow("LIC homeMade", lic);
+  Mat fdog = fDoG(floatImg, etf, 3.0, 1.0, 0.99, 0.5, 2);
+
   Mat BnW;
-  lic.convertTo(BnW, CV_8UC1, 255.0);
-  imwrite("testLIC.png",BnW);
+  double min, max;
+  minMaxLoc(fdog, &min, &max);
+  printf("%f, %f\n", max, 255.0/max);
+  fdog.convertTo(BnW, CV_8UC1, 255.0/max);
+  namedWindow("fdog", WINDOW_NORMAL);
+  imshow("fdog", BnW);
+  imwrite("testFDOG.png",BnW);
   waitKey();
 
-  Mat lic2, etf2;
-  lime::calcETF(floatImg, etf2);
-  lime::LIC(noise, lic2, etf2, 20, lime::LIC_EULERIAN);
-  namedWindow("LIC lime", WINDOW_NORMAL);
-  imshow("LIC lime", lic);
-  waitKey();
+  // Mat lic2, etf2;
+  // lime::calcETF(floatImg, etf2);
+  // lime::LIC(noise, lic2, etf2, 20, lime::LIC_EULERIAN);
+  // namedWindow("LIC lime", WINDOW_NORMAL);
+  // imshow("LIC lime", lic);
+  // waitKey();
+
+  // Mat edges, cEdges;
+  // lime::edgeFDoG(floatImg, edges, etf, lime::DoGParams(2.5, 3, 0.99, 15.0, lime::NPR_EDGE_FDOG));
+  // namedWindow("edges", WINDOW_NORMAL);
+  //
+  // edges.convertTo(cEdges, CV_8UC1, 255);
+  // imshow("edges", cEdges);
+  // waitKey();
+
 }
 
 int main(int argc, char const *argv[]) {

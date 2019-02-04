@@ -66,13 +66,12 @@ Computing the ETF is in different step:
   This part is detailled above the edgeTangentFlow() function
 - Before iterating once again, normalize the finded etf and use it as isophote in the next iteration
 This function is as light as possible to provide a freedom of parameters
-@param gVectMap, a map of vector (CV_32FC2) containing the gradient
 @param iVectMap, a map of vector (CV_32FC2) containing the isophote (orthogonal to the gradient)
 @param gHat, the magnitude of the gradient (CV_32FC1)
 @param radius, the radius for the spacial weight
 @param iteration, the number of iteration to smooth the etf
 */
-Mat computeETF(const Mat & gVectMap, const Mat & iVectMap, const Mat & gHat, const int radius = 5, int iteration = 3) {
+Mat computeETF(const Mat & iVectMap, const Mat & gHat, const int radius = 5, int iteration = 3) {
   //temp will contains the value between two iterations
   Mat temp(gHat.rows, gHat.cols, CV_32FC2);
   Point2d etfPoint;
