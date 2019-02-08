@@ -120,4 +120,8 @@ int sign(float value){
   return value < 0? -1 : 1;
 }
 
+float gaussianValue(float x, float sigma){
+  return 1.0/(sqrt(2.0*M_PI)*sigma)*exp(-(x*x)/(2.0*sigma*sigma));
+}
+
 #endif
