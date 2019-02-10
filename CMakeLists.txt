@@ -15,6 +15,16 @@ if("${STYLISATION_ROOT}" STREQUAL "${STYLISATION_CONFIG_DIR}")
           "Re-run CMake from another directory (e.g build/)")
 endif()
 
+# set Release build by default
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+# add GCC optimisation
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 #use openCV lib
 find_package(
   OpenCV
@@ -40,7 +50,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 include_directories(
 	${OpenCV_INCLUDE_DIRS}
   ${STYLISATION_ROOT}/include
-  ${STYLISATION_ROOT}/lib
+  # ${STYLISATION_ROOT}/lib
 )
 
 #maybe for each artistical effect create specific var to have specific
@@ -51,7 +61,7 @@ file(
 
 	${STYLISATION_ROOT}/include/*.h
   ${STYLISATION_ROOT}/src/*.cpp
-  ${STYLISATION_ROOT}/lib/*.h
+  # ${STYLISATION_ROOT}/lib/*.h
 )
 
 add_executable(

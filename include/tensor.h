@@ -63,8 +63,8 @@ Mat* tensorStructureArray(const Mat & dx, const Mat & dy){
   tensorArray[1] = Mat(dx.rows,dx.cols,CV_32F);
   tensorArray[2] = Mat(dx.rows,dx.cols,CV_32F);
 
-  for (size_t i = 0; i < dx.rows; i++) {
-    for (size_t j = 0; j < dx.cols; j++) {
+  for (int i = 0; i < dx.rows; i++) {
+    for (int j = 0; j < dx.cols; j++) {
       tensorIJ = tensorStructure(dx,dy,i,j); //compute tensor structure for given pixel
       tensorArray[0].at<float>(i,j) = tensorIJ.at<float>(0,0); //g11
       tensorArray[1].at<float>(i,j) = tensorIJ.at<float>(1,1); //g22

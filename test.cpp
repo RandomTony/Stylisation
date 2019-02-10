@@ -6,9 +6,9 @@
 #include <dog.h>
 #include <opencv2/core/mat.hpp>
 #include <etf.h>
-#include <lime-master/sources/lime.hpp>
 #include <fdog.h>
 #include <fbl.h>
+#include <quantif.h>
 
 using namespace cv;
 
@@ -153,82 +153,37 @@ void testETF(Mat & color){
       isoVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx / (mag + 1.0e-8));
     }
   }
+  double min, max;
 
   Mat etf = computeETF(isoVectMap, gHat, 5, 3);
-  Mat fdog = fDoG(floatImg, etf, 3.0, 2, 0.985, 0.5, 2);
 
+  Mat fdog = fDoG(floatImg, etf, 3.0, 0.8, 0.985, 0.5, 2);
+  Mat fbl = computeFBL(floatColor, etf, 2.0, 2.0, 50.0, 10.0);
   Mat BnW;
-  double min, max;
   minMaxLoc(fdog, &min, &max);
   fdog.convertTo(BnW, CV_8UC1, 255.0/max);
   namedWindow("fdog", WINDOW_NORMAL);
   imshow("fdog", BnW);
   imwrite("testFDOG.png",BnW);
   waitKey();
-  Mat fbl = computeFBL(floatColor, etf, 5.0, 5.0, 50.0, 10.0);
+
+  Mat abstraction;
+  minMaxLoc(fbl, &min, &max);
+  fbl.convertTo(abstraction, CV_8UC3, 255/max);
+  fbl = LuminanceQuant(abstraction, 8);
+  imshow("abstraction", fbl);
+  waitKey();
+
   for (int y = 0; y < fbl.rows; y++) {
     for (int x = 0; x < fbl.cols; x++) {
-      if(BnW.at<uchar>(y,x) == 0){
-        fbl.at<uchar>(y,x * 3 + 0) = 0;
-        fbl.at<uchar>(y,x * 3 + 1) = 0;
-        fbl.at<uchar>(y,x * 3 + 2) = 0;
-      }
+      if (BnW.at<uchar>(y, x) == 0)
+      fbl.at<Vec3b>(y, x) = 0;
     }
   }
   imshow("final", fbl);
   imwrite("final.png", fbl);
   waitKey();
 
-
-  // Mat lic2, etf2;
-  // lime::calcETF(floatImg, etf2);
-  // lime::LIC(noise, lic2, etf2, 20, lime::LIC_EULERIAN);
-  // namedWindow("LIC lime", WINDOW_NORMAL);
-  // imshow("LIC lime", lic);
-  // waitKey();
-
-  // Mat edges, cEdges;
-  // lime::edgeFDoG(floatImg, edges, etf, lime::DoGParams(2.5, 3, 0.99, 15.0, lime::NPR_EDGE_FDOG));
-  // namedWindow("edges", WINDOW_NORMAL);
-  //
-  // edges.convertTo(cEdges, CV_8UC1, 255);
-  // imshow("edges", cEdges);
-  // waitKey();
-
-}
-
-Mat testFBL(Mat color){
-  Mat floatImg;
-  Mat gradX, gradY;
-  Mat gVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
-  Mat isoVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
-  Mat gHat = cv::Mat::zeros(color.rows, color.cols, CV_32FC1);
-  Mat grayImg, floatColor;
-
-  cvtColor(color,grayImg,COLOR_BGR2GRAY);
-
-  grayImg.convertTo(floatImg,CV_32F,1/255.0);
-
-  Sobel(floatImg, gradX, CV_32F, 1, 0);
-  Sobel(floatImg, gradY, CV_32F, 0, 1);
-  color.convertTo(floatColor, CV_32FC3, 1/255.0);
-
-  for (int y = 0; y < color.rows; y++) {
-    for (int x = 0; x < color.cols; x++) {
-      float gx = gradX.at<float>(y, x);
-      float gy = gradY.at<float>(y, x);
-
-      float mag = sqrt(gx*gx + gy* gy);
-
-      gHat.at<float>(y, x) = mag;
-
-      isoVectMap.at<float>(y, x * 2 + 0) = static_cast<float>(-gy / (mag + 1.0e-8));
-      isoVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx / (mag + 1.0e-8));
-    }
-  }
-
-  Mat etf = computeETF(isoVectMap, gHat, 5, 3);
-  Mat fbl = computeFBL(floatColor, etf, 2.0, 2.0, 50.0, 10.0);
 }
 
 int main(int argc, char const *argv[]) {

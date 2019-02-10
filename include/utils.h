@@ -18,7 +18,6 @@ Compute convolution between an picture and a kernel at a given pixel
 */
 float convolution(const Mat & pic, const Mat & kernel, const int r, const int c){
   float conv = 0;
-  int posX, posY;
   int hMiddleKernel = kernel.rows/2;
   int vMiddleKernel = kernel.cols/2;
   for (int i = -hMiddleKernel; i <= hMiddleKernel; i++) {
@@ -55,7 +54,7 @@ bool isZeroCrossPixel(Mat & img, int y, int x, float threshold = 0.0){
   //vertical neighbour
   neighboring[3][0] = img.at<float>(y+1,x);
   neighboring[3][1] = img.at<float>(y-1,x);
-  for (size_t i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     if(neighboring[i][0]*neighboring[i][1]<0 && abs(neighboring[i][0]-neighboring[i][1])>threshold){
       return true;
     }
@@ -98,8 +97,8 @@ Mat thresholdUpperValues(const Mat & img, const float thresholdPerc){
   minMaxLoc(img, &min, &max);
   threshold = max*thresholdPerc;
 
-  for (size_t i = 0; i < img.rows; i++) {
-    for (size_t j = 0; j < img.cols; j++) {
+  for (int i = 0; i < img.rows; i++) {
+    for (int j = 0; j < img.cols; j++) {
       imgThresholded.at<uchar>(i,j) = img.at<float>(i,j) > threshold ? 255 : 0;
     }
   }
@@ -116,10 +115,20 @@ float kernelFromStandardDev(float standardDev){
   return (standardDev-0.8)*(20.0/3.0)+3.0;
 }
 
+/**
+Return the sign of the value. if it is negative return -1 and 1 otherwise
+@return -1 or 1 depending of the sign of value
+*/
 int sign(float value){
   return value < 0? -1 : 1;
 }
 
+/**
+Compute the gaussian value of x with a given standard deviation
+@param x the value to compute
+@param sigma, the standard deviation value
+@return Gaussian value at x with sigma std
+*/
 float gaussianValue(float x, float sigma){
   return 1.0/(sqrt(2.0*M_PI)*sigma)*exp(-(x*x)/(2.0*sigma*sigma));
 }
