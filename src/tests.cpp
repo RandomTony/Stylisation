@@ -1,14 +1,15 @@
 #include <iostream>
-#include <gradient.h>
 #include <opencv2/highgui.hpp>
-#include <utils.h>
-#include <tensor.h>
-#include <dog.h>
 #include <opencv2/core/mat.hpp>
-#include <etf.h>
-#include <fdog.h>
-#include <fbl.h>
-#include <quantif.h>
+#include "tests.h"
+#include "gradient.h"
+#include "utils.h"
+#include "tensor.h"
+#include "dog.h"
+#include "etf.h"
+#include "fdog.h"
+#include "fbl.h"
+#include "quantif.h"
 
 using namespace cv;
 
@@ -125,81 +126,69 @@ void testTensor(Mat & img){
   waitKey();
 }
 
-void testETF(Mat & color){
-  Mat floatImg;
-  Mat gradX, gradY;
+void testAbstraction(Mat & color){
+  Mat floatGray, floatColor, gradX, gradY, ucEdges;
+  Mat etf, fdog, fbl, abstraction, quant;
   Mat gVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
   Mat isoVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
   Mat gHat = cv::Mat::zeros(color.rows, color.cols, CV_32FC1);
-  Mat grayImg, floatColor;
+  double min, max;
+  float gx, gy, mag;
 
-  cvtColor(color,grayImg,COLOR_BGR2GRAY);
-  grayImg.convertTo(floatImg,CV_32F,1/255.0);
-
-  Sobel(floatImg, gradX, CV_32F, 1, 0);
-  Sobel(floatImg, gradY, CV_32F, 0, 1);
   color.convertTo(floatColor, CV_32FC3, 1/255.0);
+  cvtColor(floatColor, floatGray, COLOR_BGR2GRAY);
 
-  for (int y = 0; y < grayImg.rows; y++) {
-    for (int x = 0; x < grayImg.cols; x++) {
-      float gx = gradX.at<float>(y, x);
-      float gy = gradY.at<float>(y, x);
+  // get gradient
+  Sobel(floatGray, gradX, CV_32F, 1, 0);
+  Sobel(floatGray, gradY, CV_32F, 0, 1);
 
-      float mag = sqrt(gx*gx + gy* gy);
+  for (int y = 0; y < color.rows; y++) {
+    for (int x = 0; x < color.cols; x++) {
+      gx = gradX.at<float>(y, x);
+      gy = gradY.at<float>(y, x);
+
+      mag = sqrt(gx*gx + gy*gy);
 
       gHat.at<float>(y, x) = mag;
-
-      isoVectMap.at<float>(y, x * 2 + 0) = static_cast<float>(-gy / (mag + 1.0e-8));
-      isoVectMap.at<float>(y, x * 2 + 1) = static_cast<float>(gx / (mag + 1.0e-8));
+      // construction de vecteurs orthogonaux aux gradient -> tangent au contour
+      isoVectMap.at<float>(y, x * 2 + 0) = -gy / (mag + 1.0e-8);
+      isoVectMap.at<float>(y, x * 2 + 1) = gx / (mag + 1.0e-8);
     }
   }
-  double min, max;
 
-  Mat etf = computeETF(isoVectMap, gHat, 5, 3);
+  etf = computeETF(isoVectMap, gHat, 5, 3);
 
-  Mat fdog = fDoG(floatImg, etf, 3.0, 0.8, 0.985, 0.5, 2);
-  Mat fbl = computeFBL(floatColor, etf, 2.0, 2.0, 50.0, 10.0);
-  Mat BnW;
+  fdog = fDoG(floatGray, etf, 3.0, 0.8, 0.985, 0.5, 2);
   minMaxLoc(fdog, &min, &max);
-  fdog.convertTo(BnW, CV_8UC1, 255.0/max);
+  fdog.convertTo(ucEdges, CV_8UC1, 255.0/max);
   namedWindow("fdog", WINDOW_NORMAL);
-  imshow("fdog", BnW);
-  imwrite("testFDOG.png",BnW);
+  imshow("fdog", ucEdges);
+  imwrite("fdog.png",ucEdges);
   waitKey();
 
-  Mat abstraction;
+  fbl = computeFBL(floatColor, etf, 2.0, 2.0, 50.0, 10.0);
   minMaxLoc(fbl, &min, &max);
-  fbl.convertTo(abstraction, CV_8UC3, 255/max);
-  fbl = LuminanceQuant(abstraction, 8);
-  imshow("abstraction", fbl);
+  fbl.convertTo(fbl, CV_8UC3, 255/max);
+  namedWindow("fbl", WINDOW_NORMAL);
+  imshow("fbl", fbl);
+  imwrite("fbl.png", fbl);
+
+  quant = LuminanceQuant(fbl, 8);
+  namedWindow("quantif", WINDOW_NORMAL);
+  imshow("quantif", quant);
+  imwrite("quantif.png", quant);
   waitKey();
 
-  for (int y = 0; y < fbl.rows; y++) {
-    for (int x = 0; x < fbl.cols; x++) {
-      if (BnW.at<uchar>(y, x) == 0)
-      fbl.at<Vec3b>(y, x) = 0;
+  abstraction = quant.clone();
+  // fusion of quantification and edges
+  for (int y = 0; y < quant.rows; y++) {
+    for (int x = 0; x < quant.cols; x++) {
+      if (ucEdges.at<uchar>(y, x) == 0)
+        abstraction.at<Vec3b>(y, x) = 0;
     }
   }
-  imshow("final", fbl);
-  imwrite("final.png", fbl);
+  namedWindow("abstraction", WINDOW_NORMAL);
+  imshow("abstraction", abstraction);
+  imwrite("abstraction.png", abstraction);
   waitKey();
-
-}
-
-int main(int argc, char const *argv[]) {
-  Mat im;
-  if(argc == 2)
-    im = imread(argv[1],CV_LOAD_IMAGE_COLOR);
-  else{
-    std::cout << "Provide an picture path as an argument." << '\n';
-    std::cout << "Usage: " << argv[0] << " <pathToPicture>" << '\n';
-    return 1;
-  }
-  imshow("test picture",im);
-  waitKey();
-  Mat imGrayScale;
-  cvtColor(im,imGrayScale,COLOR_BGR2GRAY);
-  // testETF(imGrayScale);
-  testETF(im);
-  return 0;
 }
