@@ -69,7 +69,7 @@ Compute the flow based DoG. Return a picture with black edges
 @param threshold, the threshold used for binarisation step
 @param maxIter, the maximim number of iteration. The first iteration supress noise, the other iterration inforce the edges already found a big number of iteration can give artifacts
 */
-Mat fDoG(const Mat & img, const Mat & isophote, const float sigmaM, const float sigmaC, const float rho = 0.97, const float threshold = 0.5, int maxIter = 2){
+Mat fDoG(const Mat & img, const Mat & isophote, const float sigmaM = 3.0, const float sigmaC = 1.0, const float rho = 0.97, const float threshold = 0.5, int maxIter = 3){
   int cx, cy;
   int iteration = maxIter;
   const float stepSize = 1.0;

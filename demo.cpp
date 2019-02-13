@@ -18,6 +18,6 @@ int main(int argc, char const *argv[]) {
   imshow("input picture",im);
   waitKey();
 
-  testAbstraction(im);
+  testAbstraction(im, argv[1]);
   return 0;
 }

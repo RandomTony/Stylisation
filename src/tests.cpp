@@ -1,6 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
+#include <string>
 #include "tests.h"
 #include "gradient.h"
 #include "utils.h"
@@ -10,6 +11,7 @@
 #include "fdog.h"
 #include "fbl.h"
 #include "quantif.h"
+#include "args.h"
 
 using namespace cv;
 
@@ -126,7 +128,7 @@ void testTensor(Mat & img){
   waitKey();
 }
 
-void testAbstraction(Mat & color){
+void testAbstraction(Mat & color, string imgName){
   Mat floatGray, floatColor, gradX, gradY, ucEdges;
   Mat etf, fdog, fbl, abstraction, quant;
   Mat gVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
@@ -134,6 +136,10 @@ void testAbstraction(Mat & color){
   Mat gHat = cv::Mat::zeros(color.rows, color.cols, CV_32FC1);
   double min, max;
   float gx, gy, mag;
+  FdogArgs fdogA;
+  FblArgs fblA;
+  KMeanArgs kmArgs;
+  std::string csvInfo = imgName+";"+std::to_string(color.rows)+"x"+std::to_string(color.cols)+";";
 
   color.convertTo(floatColor, CV_32FC3, 1/255.0);
   cvtColor(floatColor, floatGray, COLOR_BGR2GRAY);
@@ -158,7 +164,10 @@ void testAbstraction(Mat & color){
 
   etf = computeETF(isoVectMap, gHat, 5, 3);
 
-  fdog = fDoG(floatGray, etf, 3.0, 0.8, 0.985, 0.5, 2);
+  fdogA.setArgs();
+  fdogA.print();
+  csvInfo += fdogA.csvFormatted();
+  fdog = fDoG(floatGray, etf, fdogA.getArg(0), fdogA.getArg(1), fdogA.getArg(2), fdogA.getArg(3), fdogA.getArg(4));
   minMaxLoc(fdog, &min, &max);
   fdog.convertTo(ucEdges, CV_8UC1, 255.0/max);
   namedWindow("fdog", WINDOW_NORMAL);
@@ -166,14 +175,19 @@ void testAbstraction(Mat & color){
   imwrite("fdog.png",ucEdges);
   waitKey();
 
-  fbl = computeFBL(floatColor, etf, 2.0, 2.0, 50.0, 10.0);
+  fblA.setArgs();
+  fblA.print();
+  csvInfo += fblA.csvFormatted();
+  fbl = computeFBL(floatColor, etf, fblA.getArg(0), fblA.getArg(1), fblA.getArg(2), fblA.getArg(3), fblA.getArg(4));
   minMaxLoc(fbl, &min, &max);
   fbl.convertTo(fbl, CV_8UC3, 255/max);
   namedWindow("fbl", WINDOW_NORMAL);
   imshow("fbl", fbl);
   imwrite("fbl.png", fbl);
 
-  quant = LuminanceQuant(fbl, 8);
+  kmArgs.setArgs();
+  csvInfo += fblA.csvFormatted();
+  quant = LuminanceQuant(fbl, kmArgs.getArg(0));
   namedWindow("quantif", WINDOW_NORMAL);
   imshow("quantif", quant);
   imwrite("quantif.png", quant);
@@ -191,4 +205,7 @@ void testAbstraction(Mat & color){
   imshow("abstraction", abstraction);
   imwrite("abstraction.png", abstraction);
   waitKey();
+  std::cout << "CSV formatted parameter used (order: imgInfos, fdogParams, fblParams, quantisation)" << '\n';
+
+  std::cout << setprecision(4) << csvInfo << '\n';
 }
