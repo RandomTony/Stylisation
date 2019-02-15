@@ -1,6 +1,8 @@
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/opencv.hpp>
+
 #include "tests.h"
 
 using namespace cv;
@@ -17,7 +19,9 @@ int main(int argc, char const *argv[]) {
   namedWindow("input picture", WINDOW_NORMAL);
   imshow("input picture",im);
   waitKey();
-
-  testAbstraction(im, argv[1]);
+  Mat imgGray;
+  cv::cvtColor(im, imgGray, CV_BGR2GRAY);
+  testDoG(imgGray);
+  // testAbstraction(im, argv[1]);
   return 0;
 }

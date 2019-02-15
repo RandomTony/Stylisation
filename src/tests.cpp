@@ -12,6 +12,7 @@
 #include "fbl.h"
 #include "quantif.h"
 #include "args.h"
+// #include <lime-master/sources/lime.hpp>
 
 using namespace cv;
 
@@ -34,6 +35,7 @@ void testDoG(Mat & img){
   img.convertTo(imgdouble,CV_32F,1/255.0);
   Mat dog = DoG(imgdouble,5.0,3.0);
   imshow("DoG",dog);
+  imwrite("DoG.png", dog);
   // std::cout << dog << '\n';
   Mat test = zeroCrossingMat(dog);
   imshow("passage par zero dog, threshold 0 percent", test);
@@ -163,6 +165,15 @@ void testAbstraction(Mat & color, string imgName){
   }
 
   etf = computeETF(isoVectMap, gHat, 5, 3);
+  //
+  // Mat lic, noise;
+  // lime::randomNoise(noise, cv::Size(color.cols, color.rows));
+  // lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
+  // namedWindow("LIC homeMade", WINDOW_NORMAL);
+  // imshow("LIC homeMade", lic);
+  // minMaxLoc(lic, &min, &max);
+  // lic.convertTo(lic, CV_8UC1, 255.0/max);
+  // imwrite("lic.png", lic);
 
   fdogA.setArgs();
   fdogA.print();
