@@ -35,7 +35,6 @@ void testDoG(Mat & img){
   img.convertTo(imgdouble,CV_32F,1/255.0);
   Mat dog = DoG(imgdouble,5.0,3.0);
   imshow("DoG",dog);
-  imwrite("DoG.png", dog);
   // std::cout << dog << '\n';
   Mat test = zeroCrossingMat(dog);
   imshow("passage par zero dog, threshold 0 percent", test);
