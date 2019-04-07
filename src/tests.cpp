@@ -1,10 +1,18 @@
 #include <iostream>
-#include <gradient.h>
 #include <opencv2/highgui.hpp>
-#include <utils.h>
-#include <tensor.h>
-#include <dog.h>
 #include <opencv2/core/mat.hpp>
+#include <string>
+#include "tests.h"
+#include "gradient.h"
+#include "utils.h"
+#include "tensor.h"
+#include "dog.h"
+#include "etf.h"
+#include "fdog.h"
+#include "fbl.h"
+#include "quantif.h"
+#include "args.h"
+// #include <lime-master/sources/lime.hpp>
 
 using namespace cv;
 
@@ -42,7 +50,7 @@ void testDoG(Mat & img){
 void testTensor(Mat & img){
   Mat dx, dy;
   Mat doubleImg;
-  Mat gradientVector, normalVector;
+  Point2f gradientVector, normalVector;
   Mat isophote(img.rows, img.cols, CV_32F);
   Mat normal(img.rows, img.cols, CV_32F);
   Mat coherence(img.rows, img.cols, CV_32F);
@@ -121,21 +129,93 @@ void testTensor(Mat & img){
   waitKey();
 }
 
+void testAbstraction(Mat & color, string imgName){
+  Mat floatGray, floatColor, gradX, gradY, ucEdges;
+  Mat etf, fdog, fbl, abstraction, quant;
+  Mat gVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
+  Mat isoVectMap = Mat::zeros(color.rows, color.cols, CV_32FC2);
+  Mat gHat = cv::Mat::zeros(color.rows, color.cols, CV_32FC1);
+  double min, max;
+  float gx, gy, mag;
+  FdogArgs fdogA;
+  FblArgs fblA;
+  KMeanArgs kmArgs;
+  std::string csvInfo = imgName+";"+std::to_string(color.rows)+"x"+std::to_string(color.cols)+";";
 
+  color.convertTo(floatColor, CV_32FC3, 1/255.0);
+  cvtColor(floatColor, floatGray, COLOR_BGR2GRAY);
 
-int main(int argc, char const *argv[]) {
-  Mat im;
-  im = imread("../ressources/highDefinitionUnsplash/spacex-549328-unsplash.jpg",CV_LOAD_IMAGE_COLOR);
-  namedWindow("test picture", WINDOW_NORMAL);
-  imshow("test picture",im);
+  // get gradient
+  Sobel(floatGray, gradX, CV_32F, 1, 0);
+  Sobel(floatGray, gradY, CV_32F, 0, 1);
+
+  for (int y = 0; y < color.rows; y++) {
+    for (int x = 0; x < color.cols; x++) {
+      gx = gradX.at<float>(y, x);
+      gy = gradY.at<float>(y, x);
+
+      mag = sqrt(gx*gx + gy*gy);
+
+      gHat.at<float>(y, x) = mag;
+      // construction de vecteurs orthogonaux aux gradient -> tangent au contour
+      isoVectMap.at<float>(y, x * 2 + 0) = -gy / (mag + 1.0e-8);
+      isoVectMap.at<float>(y, x * 2 + 1) = gx / (mag + 1.0e-8);
+    }
+  }
+
+  etf = computeETF(isoVectMap, gHat, 5, 3);
+  //
+  // Mat lic, noise;
+  // lime::randomNoise(noise, cv::Size(color.cols, color.rows));
+  // lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
+  // namedWindow("LIC homeMade", WINDOW_NORMAL);
+  // imshow("LIC homeMade", lic);
+  // minMaxLoc(lic, &min, &max);
+  // lic.convertTo(lic, CV_8UC1, 255.0/max);
+  // imwrite("lic.png", lic);
+
+  fdogA.setArgs();
+  fdogA.print();
+  csvInfo += fdogA.csvFormatted();
+  fdog = fDoG(floatGray, etf, fdogA.getArg(0), fdogA.getArg(1), fdogA.getArg(2), fdogA.getArg(3), fdogA.getArg(4));
+  minMaxLoc(fdog, &min, &max);
+  fdog.convertTo(ucEdges, CV_8UC1, 255.0/max);
+  namedWindow("fdog", WINDOW_NORMAL);
+  imshow("fdog", ucEdges);
+  imwrite("fdog.png",ucEdges);
   waitKey();
-  Mat imGrayScale;
-  cvtColor(im,imGrayScale,COLOR_BGR2GRAY);
-  // Mat sGradient;
-  // sGradient = getSobelGradient(imGrayScale);
-  // imshow("gradient", sGradient);
-  // testDoG(imGrayScale);
-  //calculer les passages par 0 du DoG
-  testTensor(imGrayScale);
-  return 0;
+
+  fblA.setArgs();
+  fblA.print();
+  csvInfo += fblA.csvFormatted();
+  fbl = computeFBL(floatColor, etf, fblA.getArg(0), fblA.getArg(1), fblA.getArg(2), fblA.getArg(3), fblA.getArg(4));
+  minMaxLoc(fbl, &min, &max);
+  fbl.convertTo(fbl, CV_8UC3, 255/max);
+  namedWindow("fbl", WINDOW_NORMAL);
+  imshow("fbl", fbl);
+  imwrite("fbl.png", fbl);
+
+  kmArgs.setArgs();
+  csvInfo += fblA.csvFormatted();
+  quant = LuminanceQuant(fbl, kmArgs.getArg(0));
+  namedWindow("quantif", WINDOW_NORMAL);
+  imshow("quantif", quant);
+  imwrite("quantif.png", quant);
+  waitKey();
+
+  abstraction = quant.clone();
+  // fusion of quantification and edges
+  for (int y = 0; y < quant.rows; y++) {
+    for (int x = 0; x < quant.cols; x++) {
+      if (ucEdges.at<uchar>(y, x) == 0)
+        abstraction.at<Vec3b>(y, x) = 0;
+    }
+  }
+  namedWindow("abstraction", WINDOW_NORMAL);
+  imshow("abstraction", abstraction);
+  imwrite("abstraction.png", abstraction);
+  waitKey();
+  std::cout << "CSV formatted parameter used (order: imgInfos, fdogParams, fblParams, quantisation)" << '\n';
+
+  std::cout << setprecision(4) << csvInfo << '\n';
 }

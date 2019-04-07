@@ -144,4 +144,31 @@ Mat Kmeans(const Mat & src, int k) {
 	return result;
 }
 
+/**
+Compute Gaussian size from standard deviation
+Invert of computation found here https://docs.opencv.org/3.2.0/d4/d86/group__imgproc__filter.html#gac05a120c1ae92a6060dd0db190a61afa
+For futher math explanation, see here https://stackoverflow.com/questions/14060017/calculate-the-gaussian-filters-sigma-using-the-kernels-size
+*/
+float kernelFromStandardDev(float standardDev){
+  return (standardDev-0.8)*(20.0/3.0)+3.0;
+}
+
+/**
+Return the sign of the value. if it is negative return -1 and 1 otherwise
+@return -1 or 1 depending of the sign of value
+*/
+int sign(float value){
+  return value < 0? -1 : 1;
+}
+
+/**
+Compute the gaussian value of x with a given standard deviation
+@param x the value to compute
+@param sigma, the standard deviation value
+@return Gaussian value at x with sigma std
+*/
+float gaussianValue(float x, float sigma){
+  return 1.0/(sqrt(2.0*M_PI)*sigma)*exp(-(x*x)/(2.0*sigma*sigma));
+}
+
 #endif

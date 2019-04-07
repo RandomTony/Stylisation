@@ -4,25 +4,17 @@
 #include <cmath>
 
 /**
-The magnitude weight function. The result range between 0 and 1.
-Bigger weight are given to pixel whose gradient magnitude are higher
-than whose of origin pixel.
-*/
-float magnitudeWeight(float originGradMagn, float currentGradMagn){
-  return (currentGradMagn-originGradMagn + 1.0) / 2.0;
-}
-
-/**
 Compute the edge tangent flow for a given pixel.
 the etf for a given pixel respect this formula
 for all the pixel is the radius (sum),
 compute his spacial weight*directionweight*magnitudeWeight
 */
-Point2d edgeTangentFlow(const Mat & isophote, const Mat & gHat, const int oRow, const int oColumn, const int radius = 5) {
+Point2f edgeTangentFlow(const Mat & isophote, const Mat & gHat, const int oRow, const int oColumn, const int radius = 5) {
   int cRow, cColumn;
   float oGradMag, cGradMag, wMagnitude, wDirectional, vectorNormalizingTerm;
-  Point2d oTan(isophote.at<float>(oRow, oColumn * 2 + 0), isophote.at<float>(oRow, oColumn * 2 + 1));
-  Point2d etf(0.0, 0.0);
+  Point2f oTan(isophote.at<float>(oRow, oColumn * 2 + 0), isophote.at<float>(oRow, oColumn * 2 + 1));
+  Point2f etf(0.0, 0.0);
+  Point2f cTan(0.0,0.0);
 
   oGradMag = gHat.at<float>(oRow, oColumn);
   cGradMag = 0.0;
@@ -40,10 +32,13 @@ Point2d edgeTangentFlow(const Mat & isophote, const Mat & gHat, const int oRow, 
         if ( (x*x+y*y) <= radius*radius ) {
 
           cGradMag = gHat.at<float>(cRow, cColumn);
-          Point2d cTan(isophote.at<float>(cRow, cColumn * 2 + 0),
+          cTan = Point2f(isophote.at<float>(cRow, cColumn * 2 + 0),
                        isophote.at<float>(cRow, cColumn * 2 + 1));
 
-          wMagnitude = magnitudeWeight(oGradMag, cGradMag);
+          /* The magnitude weight function. The result range between 0 and 1.
+          Bigger weight are given to pixel whose gradient magnitude are higher
+          than whose of origin pixel. */
+          wMagnitude = (cGradMag - oGradMag + 1.0) / 2.0;
           // compute directional weight, a bigger weight is given if vector as the same orientation
           wDirectional = oTan.dot(cTan);
 
@@ -54,7 +49,7 @@ Point2d edgeTangentFlow(const Mat & isophote, const Mat & gHat, const int oRow, 
     }
   }
   // normalize etf
-  etf = (vectorNormalizingTerm != 0.0) ? etf / vectorNormalizingTerm : Point2d(0.0, 0.0);
+  etf = (vectorNormalizingTerm != 0.0) ? etf / vectorNormalizingTerm : Point2f(0.0, 0.0);
 
   return etf;
 }
@@ -66,21 +61,22 @@ Computing the ETF is in different step:
   This part is detailled above the edgeTangentFlow() function
 - Before iterating once again, normalize the finded etf and use it as isophote in the next iteration
 This function is as light as possible to provide a freedom of parameters
-@param gVectMap, a map of vector (CV_32FC2) containing the gradient
 @param iVectMap, a map of vector (CV_32FC2) containing the isophote (orthogonal to the gradient)
 @param gHat, the magnitude of the gradient (CV_32FC1)
 @param radius, the radius for the spacial weight
 @param iteration, the number of iteration to smooth the etf
 */
-Mat computeETF(const Mat & gVectMap, const Mat & iVectMap, const Mat & gHat, const int radius = 5, int iteration = 3) {
+Mat computeETF(const Mat & iVectMap, const Mat & gHat, const int radius = 5, int iteration = 3) {
   //temp will contains the value between two iterations
   Mat temp(gHat.rows, gHat.cols, CV_32FC2);
-  Point2d etfPoint;
+  Point2f etfPoint;
   // we use etf in our computation. Here etf is the isophote (the edges)
   Mat etf = iVectMap.clone();
+  float vx, vy, mag;
 
   // we get a smoother etf after each iteration
   while (iteration--) {
+    #pragma omp parallel for
     for (int y = 0; y < gHat.rows; y++) {
       for (int x = 0; x < gHat.cols; x++) {
         // compute the etf for a single pixel
@@ -89,17 +85,16 @@ Mat computeETF(const Mat & gVectMap, const Mat & iVectMap, const Mat & gHat, con
         temp.at<float>(y, x * 2 + 1) = etfPoint.y;
       }
     }
-    temp.convertTo(etf, CV_32FC2);
     //normalize etf
     for (int y = 0; y < gHat.rows; y++) {
       for (int x = 0; x < gHat.cols; x++) {
-        float vx = etf.at<float>(y, x*2 + 0);
-        float vy = etf.at<float>(y, x*2 + 1);
+        vx = temp.at<float>(y, x*2 + 0);
+        vy = temp.at<float>(y, x*2 + 1);
         // compute the magnitude to normalize. A 10e-8 is added to avoid div by zero
-        float mag = sqrt(vx*vx + vy*vy) + 1.0e-8;
+        mag = sqrt(vx*vx + vy*vy) + 1.0e-8;
 
-        etf.at<float>(y, x * 2 + 0) = static_cast<float>(vx / mag);
-        etf.at<float>(y, x * 2 + 1) = static_cast<float>(vy / mag);;
+        etf.at<float>(y, x * 2 + 0) = vx / mag;
+        etf.at<float>(y, x * 2 + 1) = vy / mag;
       }
     }
   }
