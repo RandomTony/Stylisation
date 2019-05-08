@@ -1,10 +1,10 @@
-#ifndef FBL_H
-#define FBL_H
+#ifndef FBL_HPP
+#define FBL_HPP
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/mat.hpp>
 #include <cmath> //for math functions
-#include <utils.h>
+#include "utils.hpp"
 
 /**
 Compute the similarity color value between two colors. A big weight is given if

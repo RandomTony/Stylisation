@@ -2,16 +2,16 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
 #include <string>
-#include "tests.h"
-#include "gradient.h"
-#include "utils.h"
-#include "tensor.h"
-#include "dog.h"
-#include "etf.h"
-#include "fdog.h"
-#include "fbl.h"
+#include "tests.hpp"
+#include "gradient.hpp"
+#include "utils.hpp"
+#include "tensor.hpp"
+#include "dog.hpp"
+#include "etf.hpp"
+#include "fdog.hpp"
+#include "fbl.hpp"
 #include "quantif.hpp"
-#include "args.h"
+#include "args.hpp"
 // #include <lime-master/sources/lime.hpp>
 
 Mat testColorAndDoG(Mat & img, Mat & color) {

@@ -1,5 +1,5 @@
-#ifndef TESTS_H
-#define TESTS_H
+#ifndef TESTS_HPP
+#define TESTS_HPP
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>

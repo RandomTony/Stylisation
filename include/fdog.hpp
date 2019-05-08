@@ -1,10 +1,10 @@
-#ifndef FDOG_H
-#define FDOG_H
+#ifndef FDOG_HPP
+#define FDOG_HPP
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/mat.hpp>
 #include <cmath> //for math functions
-#include <utils.h>
+#include "utils.hpp"
 
 using namespace cv;
 

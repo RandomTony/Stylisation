@@ -1,7 +1,7 @@
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
-#include "tests.h"
+#include "tests.hpp"
 
 using namespace cv;
 

@@ -1,5 +1,5 @@
-#ifndef ETF_H
-#define ETF_H
+#ifndef ETF_HPP
+#define ETF_HPP
 
 #include <cmath>
 

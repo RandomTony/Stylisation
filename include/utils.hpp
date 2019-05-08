@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/mat.hpp>
