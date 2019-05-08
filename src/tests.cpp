@@ -11,7 +11,9 @@
 #include "fdog.hpp"
 #include "fbl.hpp"
 #include "quantif.hpp"
-#include "args.hpp"
+#include "args/fblArgs.hpp"
+#include "args/fdogArgs.hpp"
+#include "args/kMeanArgs.hpp"
 // #include <lime-master/sources/lime.hpp>
 
 Mat testColorAndDoG(Mat & img, Mat & color) {
