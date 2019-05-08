@@ -60,6 +60,7 @@ file(
   SOURCE
 
 	${STYLISATION_ROOT}/include/*.h
+	${STYLISATION_ROOT}/include/*.hpp
   ${STYLISATION_ROOT}/src/*.cpp
 )
 

@@ -36,3 +36,4 @@ build/*
 #ignore executables files
 bin/*
 *CMakeFiles*
+doc/html/*

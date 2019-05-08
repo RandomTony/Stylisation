@@ -1,8 +1,4 @@
-#ifndef QUANTIF_H
-#define QUANTIF_H
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/core/mat.hpp>
+#include "quantif.hpp"
 
 Mat LuminanceQuant(const Mat & src, int clusts) {
 	//cv::namedWindow("Source", WINDOW_NORMAL);
@@ -20,7 +16,7 @@ Mat LuminanceQuant(const Mat & src, int clusts) {
 	//int clusts = 4;
 	double eps = 0.001;
 	colVec.convertTo(colVecD, CV_32F); // convert to floating point
-	double compactness = cv::kmeans(colVecD, clusts, bestLabels,
+	cv::kmeans(colVecD, clusts, bestLabels,
 		TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, attempts, eps),
 		attempts, KMEANS_PP_CENTERS, centers);
 
@@ -37,5 +33,3 @@ Mat LuminanceQuant(const Mat & src, int clusts) {
 	//cv::imshow("Luminance Quantif", lum);
 	return lum;
 }
-
-#endif

@@ -97,8 +97,8 @@ Mat thresholdUpperValues(const Mat & img, const float thresholdPerc) {
 	minMaxLoc(img, &min, &max);
 	threshold = max * thresholdPerc;
 
-	for (size_t i = 0; i < img.rows; i++) {
-		for (size_t j = 0; j < img.cols; j++) {
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
 			imgThresholded.at<uchar>(i, j) = img.at<float>(i, j) > threshold ? 255 : 0;
 		}
 	}

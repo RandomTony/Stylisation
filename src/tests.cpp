@@ -10,11 +10,48 @@
 #include "etf.h"
 #include "fdog.h"
 #include "fbl.h"
-#include "quantif.h"
+#include "quantif.hpp"
 #include "args.h"
 // #include <lime-master/sources/lime.hpp>
 
-using namespace cv;
+Mat testColorAndDoG(Mat & img, Mat & color) {
+	Mat imgdouble;
+	img.convertTo(imgdouble, CV_32F, 1 / 255.0);
+	Mat dog = DoG(imgdouble, 5.0, 3.0);
+	//namedWindow("DoG",WINDOW_NORMAL);
+	//imshow("DoG",dog);
+	double min, max;
+	minMaxLoc(dog, &min, &max);
+	float threshold = max * 4 / 100;
+	Mat edges = zeroCrossingMat(dog, threshold);
+	float an = 3;
+	Mat element = getStructuringElement(MORPH_ELLIPSE, Size(an * 2 + 1, an * 2 + 1), Point(an, an));
+	//dilate(edges,edges,element);
+	//namedWindow("passage par zero dog, threshold 4 percent",WINDOW_NORMAL);
+	//imshow("passage par zero dog, threshold 4 percent", edges);
+	Mat coloredEdges(color.rows,color.cols,color.type());// = Quantification(color, 20);
+	// float pas(255. / 50);
+	//dilate(coloredEdges,coloredEdges,element);
+	//GaussianBlur(coloredEdges, coloredEdges, Size(an * 2 + 1, an * 2 + 1), 3.5);
+	//Mat coloredEdges(color);
+	cvtColor(color, coloredEdges, CV_BGR2Lab);
+	for (int i(0);i < color.rows;i++) {
+		for (int j(0);j < color.cols;j++) {
+			if (edges.at<uchar>(i, j) == 255) {
+				coloredEdges.at<Vec3b>(i, j)[0] *= 0.75;//color.at<Vec3b>(i, j)[0] * 1.25;
+			}
+			// else {
+			// 	coloredEdges.at<Vec3b>(i, j) = color.at<Vec3b>(i, j);
+			// 	coloredEdges.at<Vec3b>(i, j)[1] = round((float)color.at<Vec3b>(i, j)[1] / pas)*pas;
+			// 	coloredEdges.at<Vec3b>(i, j)[2] = round((float)color.at<Vec3b>(i, j)[2] / pas)*pas;
+			// }
+		}
+	}
+	//namedWindow("Colored edges",WINDOW_NORMAL);
+	//imshow("Colored edges", coloredEdges);
+	cvtColor(coloredEdges, coloredEdges, CV_Lab2BGR);
+	return coloredEdges;
+}
 
 void testConvol(){
   Mat test(9,9,CV_32F,0.0);
@@ -71,8 +108,8 @@ void testTensor(Mat & img){
   GaussianBlur(tensorArray[1],smoothedTensor[1],Size(0,0),1);
   GaussianBlur(tensorArray[2],smoothedTensor[2],Size(0,0),1);
 
-  for (size_t i = 0; i < img.rows; i++) {
-    for (size_t j = 0; j < img.cols; j++) {
+  for (int i = 0; i < img.rows; i++) {
+    for (int j = 0; j < img.cols; j++) {
       tensor.at<float>(0,0) = smoothedTensor[0].at<float>(i,j);
       tensor.at<float>(0,1) = smoothedTensor[2].at<float>(i,j);
       tensor.at<float>(1,0) = smoothedTensor[2].at<float>(i,j);
@@ -115,8 +152,8 @@ void testTensor(Mat & img){
   imshow("Norm thresholded", imgToShow);
 
   Mat imgModified = img.clone();
-  for (size_t i = 0; i < img.rows; i++) {
-    for (size_t j = 0; j < img.cols; j++) {
+  for (int i = 0; i < img.rows; i++) {
+    for (int j = 0; j < img.cols; j++) {
       if(imgToShow.at<uchar>(i,j)==255){
         imgModified.at<uchar>(i,j) = 0;
       }
@@ -127,6 +164,65 @@ void testTensor(Mat & img){
   imshow("img modif", imgModified);
 
   waitKey();
+}
+
+
+Mat testDrawing(Mat & img, Mat & color) {
+	Mat imgdouble;
+	img.convertTo(imgdouble, CV_32F, 1 / 255.0);
+	Mat dog = DoG(imgdouble, 5.0, 3.0);
+	//namedWindow("DoG",WINDOW_NORMAL);
+	//imshow("DoG",dog);
+	double min, max;
+	minMaxLoc(dog, &min, &max);
+	float threshold = max * 4 / 100;
+	Mat edges = zeroCrossingMat(dog, threshold);
+	Mat canvas(color.rows, color.cols, color.type());
+	for (int i(0);i < canvas.rows;i++) {
+		for (int j(0);j < canvas.cols;j++) {
+			canvas.at<Vec3b>(i, j)[0] = 255;
+			canvas.at<Vec3b>(i, j)[1] = 255;
+			canvas.at<Vec3b>(i, j)[2] = 255;
+		}
+	}
+	int length(5);
+	for (int i(5);i < edges.rows-5;i++) {
+		for (int j(5);j < edges.cols-5;j++) {
+			if (edges.at<uchar>(i, j) == 255) {
+				Scalar c(color.at<Vec3b>(i, j)[0], color.at<Vec3b>(i, j)[1], color.at<Vec3b>(i, j)[2]);
+				if (edges.at<uchar>(i, j + 2) == 255) {
+					if (edges.at<uchar>(i + 2, j + 2) == 255) {
+						line(canvas, Point(j - length, i - length), Point(j + length, i + length), c);
+					}
+					else if (edges.at<uchar>(i - 2, j + 2) == 255) {
+						line(canvas, Point(j - length, i + length), Point(j + length, i - length), c);
+					}
+					else {
+						line(canvas, Point(j - length, i), Point(j + length, i), c);
+					}
+				}
+				else if (edges.at<uchar>(i + 2, j) == 255) {
+					line(canvas, Point(j, i - length), Point(j, i + length), c);
+				}
+			}
+
+			//line(color,Point(j,i-5.5),Point(j+1.5,i+5),Scalar(12.,12.,12.));
+		}
+	}
+	//namedWindow("Drawing test", WINDOW_NORMAL);
+	//imshow("Drawing test", color);
+
+	return canvas;
+}
+
+void testQuantif(Mat & img) {
+	float an = 10;
+	Mat element = getStructuringElement(MORPH_ELLIPSE, Size(an * 2 + 1, an * 2 + 1), Point(an, an));
+	Mat color = Quantification(img, 10);
+	dilate(color, color, element);
+	GaussianBlur(color, color, Size(an * 2 + 1, an * 2 + 1), 3.5);
+	cv::namedWindow("Colored edges", WINDOW_NORMAL);
+	cv::imshow("Colored edges", color);
 }
 
 void testAbstraction(Mat & color, string imgName){
@@ -164,15 +260,6 @@ void testAbstraction(Mat & color, string imgName){
   }
 
   etf = computeETF(isoVectMap, gHat, 5, 3);
-  //
-  // Mat lic, noise;
-  // lime::randomNoise(noise, cv::Size(color.cols, color.rows));
-  // lime::LIC(noise, lic, etf, 20, lime::LIC_EULERIAN);
-  // namedWindow("LIC homeMade", WINDOW_NORMAL);
-  // imshow("LIC homeMade", lic);
-  // minMaxLoc(lic, &min, &max);
-  // lic.convertTo(lic, CV_8UC1, 255.0/max);
-  // imwrite("lic.png", lic);
 
   fdogA.setArgs();
   fdogA.print();

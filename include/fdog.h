@@ -9,12 +9,11 @@
 using namespace cv;
 
 
-/**
-superImpose a picture: add edges to a given picture and smooth it with a Gaussian kernel
-@param grayImg, the grayScale image in float between 0 and 1
-@param fDoG, the edge map. edges are black
-@param sigma, the value to smooth the two picture
-@return the superimposed picture
+/** brief superImposing - superImpose a picture: add edges to a given picture and smooth it with a Gaussian kernel
+param grayImg, the grayScale image in float between 0 and 1
+param fDoG, the edge map. edges are black
+param sigma, the value to smooth the two picture
+return the superimposed picture
 */
 Mat superImposing(const Mat & grayImg, const Mat & fDoG, float sigma = 1.0){
   Mat sI = grayImg.clone();
@@ -30,7 +29,7 @@ Mat superImposing(const Mat & grayImg, const Mat & fDoG, float sigma = 1.0){
   return out;
 }
 
-/**
+/** brief
 Compute the difference of gaussian in the gradient way for one pixel
 @param grayImg float gray img with value between 0 and 1
 @param isophote, a Vector map containing the sense of edges
