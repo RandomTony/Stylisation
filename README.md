@@ -26,12 +26,7 @@ We advice to use the ```cmake``` command from the *build* project :
     $ make
 ~~~
 The project outputs will be generated in *bin* folder.
-
-### Build the documents
-
-We use the laTeX language to write a scientific document explaining how this project work. If you want to use this paper for your own purposes, will be glad that you cite use in you paper. You can find below lines to add at your bibTeX:
-~~~
-
-~~~
+## Contributing
+If you want to contribute to this project, you can. Before you should read the [contribution document](CONTRIBUTING.md) and you should know that this project is under [Apache 2.0 licence](LICENSE.md).
 ## Testing the project
 Write about the functionnality of each executable file.
