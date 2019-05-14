@@ -12,7 +12,7 @@ param fDoG, the edge map. edges are black
 param sigma, the value to smooth the two picture
 return the superimposed picture
 */
-Mat superImposing(const Mat & grayImg, const Mat & fDoG, float sigma = 1.0);
+Mat superImposing(const Mat& grayImg, const Mat& fDoG, float sigma = 1.0);
 
 /** brief
 Compute the difference of gaussian in the gradient way for one pixel
@@ -22,7 +22,8 @@ Compute the difference of gaussian in the gradient way for one pixel
 @param sKernelValues, the value of the DoG already computed
 @return the 1d dog computed for given pixel in the gradient way
 */
-float lineDoG(const Mat & grayImg, const Mat & isophote, Point2f & lxsT, Mat & tKernelValues);
+float lineDoG(const Mat& grayImg, const Mat& isophote, Point2f& lxsT,
+              Mat& tKernelValues);
 
 /**
 Compute the flow based DoG. Return a picture with black edges
@@ -34,6 +35,8 @@ Compute the flow based DoG. Return a picture with black edges
 @param threshold, the threshold used for binarisation step
 @param maxIter, the maximim number of iteration. The first iteration supress noise, the other iterration inforce the edges already found a big number of iteration can give artifacts
 */
-Mat fDoG(const Mat & img, const Mat & isophote, const float sigmaM = 3.0, const float sigmaC = 1.0, const float rho = 0.97, const float threshold = 0.5, int maxIter = 3);
+Mat fDoG(const Mat& img, const Mat& isophote, const float sigmaM = 3.0,
+         const float sigmaC = 1.0, const float rho = 0.97,
+         const float threshold = 0.5, int maxIter = 3);
 
 #endif

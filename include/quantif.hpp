@@ -6,6 +6,6 @@
 
 using namespace cv;
 
-Mat LuminanceQuant(const Mat & src, int clusts);
+Mat LuminanceQuant(const Mat& src, int clusts);
 
 #endif

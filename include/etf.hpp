@@ -12,7 +12,8 @@ the etf for a given pixel respect this formula
 for all the pixel is the radius (sum),
 compute his spacial weight*directionweight*magnitudeWeight
 */
-Point2f edgeTangentFlow(const Mat & isophote, const Mat & gHat, const int oRow, const int oColumn, const int radius = 5);
+Point2f edgeTangentFlow(const Mat& isophote, const Mat& gHat, const int oRow,
+                        const int oColumn, const int radius = 5);
 
 /**
 Compute an ETF (Edge tangent Flow) field of vector.
@@ -26,6 +27,7 @@ This function is as light as possible to provide a freedom of parameters
 @param radius, the radius for the spacial weight
 @param iteration, the number of iteration to smooth the etf
 */
-Mat computeETF(const Mat & iVectMap, const Mat & gHat, const int radius = 5, int iteration = 3);
+Mat computeETF(const Mat& iVectMap, const Mat& gHat, const int radius = 5,
+               int iteration = 3);
 
 #endif

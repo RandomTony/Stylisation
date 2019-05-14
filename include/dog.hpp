@@ -13,6 +13,6 @@ Paid attention about the two sigma: s1 must be greater than s2
 @param s2, the lower sigma
 @return the difference between two Gaussian blurs
 */
-Mat DoG(const Mat & pic, double s1, double s2);
+Mat DoG(const Mat& pic, double s1, double s2);
 
 #endif

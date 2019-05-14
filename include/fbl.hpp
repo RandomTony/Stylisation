@@ -12,7 +12,7 @@ the two color are close
 @param sigma, the std value
 @return the weight that current point value as compared to origin point
 */
-float similarityWeight(const Vec3f & oValue, const Vec3f & cValue, float sigma);
+float similarityWeight(const Vec3f& oValue, const Vec3f& cValue, float sigma);
 
 /**
 Compute the flow based bilateral filter. To preserve the edges, we pass
@@ -27,6 +27,8 @@ second bilteral in the edge curve
 @param maxIter, the number of iteration. One iteration pass a bilteral filter along the gradient and the edges
 @return the input image treated with a flow based bilteral filter
 */
-Mat computeFBL(const Mat & img, const Mat & isophote, const float sigmaE, const float sigmaG, const float sigmaRE, const float sigmaRG, const int maxIter = 4);
+Mat computeFBL(const Mat& img, const Mat& isophote, const float sigmaE,
+               const float sigmaG, const float sigmaRE, const float sigmaRG,
+               const int maxIter = 4);
 
 #endif

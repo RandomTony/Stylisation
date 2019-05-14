@@ -5,8 +5,8 @@
 
 using namespace cv;
 
-Mat getSobelGradient(const Mat & img);
+Mat getSobelGradient(const Mat& img);
 
-Mat getLapacian(const Mat & im);
+Mat getLapacian(const Mat& im);
 
 #endif

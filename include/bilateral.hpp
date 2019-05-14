@@ -6,6 +6,6 @@
 
 using namespace cv;
 
-Mat bilateral(Mat & src);
+Mat bilateral(Mat& src);
 
 #endif /* end of include guard: BILATERAL_HPP */
