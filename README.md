@@ -1,5 +1,9 @@
 # Stylisation project
 This project aim to build NRI (Non Realistic Image) from photographies. It used different algorithms to create painting-like image that you can find in the source code.
+# Cartoon abstraction
+You can found an exemple of cartooning style in [test.cpp](src/tests.cpp) at the *testAbstraction* function. The result of this filter is illustrated with the two following pictures:
+![lennaOriginal](ressources/classicImageProcessing/lennaBig.png)
+![lennaCartooning](doc/lennaCartooning.png)
 ## Building the project
 
 ### Prerequisites
@@ -26,6 +30,8 @@ We advice to use the ```cmake``` command from the *build* project :
     $ make
 ~~~
 The project outputs will be generated in *bin* folder.
+## Ressources
+You can find some free ressources inside the [ressources](ressouces) folder. There are classical imaging processing pictures like [lenna](https://en.wikipedia.org/wiki/Lenna). High definition pictures (Full HD, UHD) can be found at [ressources/highDefinitionUnsplash](ressources/highDefinitionUnsplash). Note that if you want to add a picture in these folder you must ensure that you are allowed to do it. Also if you do it, give a credit.
 ## Contributing
 If you want to contribute to this project, you can. Before you should read the [contribution document](CONTRIBUTING.md) and you should know that this project is under [Apache 2.0 licence](LICENSE.md).
 ## Testing the project
