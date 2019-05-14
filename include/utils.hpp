@@ -16,7 +16,8 @@ Compute convolution between an picture and a kernel at a given pixel
 @param c the column of the concerned pixel
 @return the result of convolution
 */
-float convolution(const Mat & pic, const Mat & kernel, const int r, const int c);
+float convolution(const Mat & pic, const Mat & kernel, const int r,
+                  const int c);
 
 /**
 This function say if the pixel img(y,x) is a zero crossing pixel

@@ -14,7 +14,8 @@ return, the eigen values need to be given as pointers.
 @param gAmplitude, the gradient amplitude
 @param iAmplitude, the isophote amplitude
 */
-void eigen(const Mat & tensor, Point2f* gradient, Point2f* normal, float* gAmplitude, float* iAmplitude);
+void eigen(const Mat& tensor, Point2f* gradient, Point2f* normal,
+           float* gAmplitude, float* iAmplitude);
 
 /**
 Compute the tensor structure matrice of a given pixel
@@ -24,7 +25,7 @@ Compute the tensor structure matrice of a given pixel
 @param c, the column of the concerned pixel
 @return the tensor structure for the given pixel
 */
-Mat tensorStructure(const Mat &  dx, const Mat & dy, const int r, const int c);
+Mat tensorStructure(const Mat&  dx, const Mat& dy, const int r, const int c);
 
 /**
 Compute the tensor structure for the entire picture
@@ -35,7 +36,7 @@ Compute the tensor structure for the entire picture
         The second element is G22 (dy²)\n
         The third element is G12 or G21 (dx*dy)
 */
-Mat* tensorStructureArray(const Mat & dx, const Mat & dy);
+Mat* tensorStructureArray(const Mat& dx, const Mat& dy);
 
 /**
 Compute the coherence norm for a given pixel. We need the eigen values obtained from \n
@@ -44,7 +45,8 @@ the tensor structure matrix.
 @param iAmplitude, the Normal amplitude, also called lambda-
 @return the coherence norm
 */
-double coherenceNorm(const float gAmplitude /*lambda+*/, const float iAmplitude /*lambda-*/);
+double coherenceNorm(const float gAmplitude /*lambda+*/,
+                     const float iAmplitude /*lambda-*/);
 
 /**
 DpX norm. The value of alpha define the minimum value of the norm.\n
@@ -56,6 +58,8 @@ eta determine the importance of gradient and normal amplitude. The lower it is t
 @param eta, the regulation term according more or less importance to the amplitude terms
 @return the dpx norm
 */
-double dpX(const float gAmplitude /*lambda+*/, const float iAmplitude /*lambda-*/, const float alpha, const float eta);
+double dpX(const float gAmplitude /*lambda+*/,
+           const float iAmplitude /*lambda-*/,
+           const float alpha, const float eta);
 
 #endif

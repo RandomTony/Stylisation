@@ -17,8 +17,8 @@ Mat LuminanceQuant(const Mat & src, int clusts) {
 	double eps = 0.001;
 	colVec.convertTo(colVecD, CV_32F); // convert to floating point
 	cv::kmeans(colVecD, clusts, bestLabels,
-		TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, attempts, eps),
-		attempts, KMEANS_PP_CENTERS, centers);
+			   TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, attempts, eps),
+			   attempts, KMEANS_PP_CENTERS, centers);
 
 	for (int y = 0; y < lum.rows; y++) {
 		for (int x = 0; x < lum.cols; x++) {

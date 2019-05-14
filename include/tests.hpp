@@ -7,19 +7,19 @@
 
 using namespace cv;
 
-Mat testColorAndDoG(Mat & img, Mat & color);
+Mat testColorAndDoG(Mat& img, Mat& color);
 
 void testConvol();
 
-void testDoG(cv::Mat & img);
+void testDoG(Mat& img);
 
-void testTensor(cv::Mat & img);
+void testTensor(Mat& img);
 
-Mat testDrawing(Mat & img, Mat & color);
+Mat testDrawing(Mat& img, Mat& color);
 
-void testQuantif(Mat & img);
+void testQuantif(Mat& img);
 
-void testAbstraction(cv::Mat & color, std::string imgName);
+void testAbstraction(Mat& color, std::string imgName);
 
 
 #endif
